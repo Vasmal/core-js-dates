@@ -199,8 +199,15 @@ function getCountWeekendsInMonth(month, year) {
  * Date(2024, 0, 31) => 5
  * Date(2024, 1, 23) => 8
  */
-function getWeekNumberByDate(/* date */) {
-  throw new Error('Not implemented');
+function getWeekNumberByDate(date) {
+  const inputDate = new Date(date.getTime());
+  inputDate.setUTCHours(0, 0, 0, 0);
+  inputDate.setUTCDate(
+    inputDate.getUTCDate() + 4 - (inputDate.getUTCDay() || 7)
+  );
+  const yearStart = new Date(inputDate.getUTCFullYear(), 0, 1);
+  const weekNumber = Math.ceil(((inputDate - yearStart) / 86400000 + 1) / 7);
+  return weekNumber;
 }
 
 /**
@@ -270,8 +277,28 @@ function getQuarter(date) {
  * { start: '01-01-2024', end: '15-01-2024' }, 1, 3 => ['01-01-2024', '05-01-2024', '09-01-2024', '13-01-2024']
  * { start: '01-01-2024', end: '10-01-2024' }, 1, 1 => ['01-01-2024', '03-01-2024', '05-01-2024', '07-01-2024', '09-01-2024']
  */
-function getWorkSchedule(/* period, countWorkDays, countOffDays */) {
-  throw new Error('Not implemented');
+function getWorkSchedule(period, countWorkDays, countOffDays) {
+  function dateToString(date) {
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+  }
+  const shedule = [];
+  const startDate = new Date(period.start.split('-').reverse().join('-'));
+  const endDate = new Date(period.end.split('-').reverse().join('-'));
+  const workDay = new Date(startDate);
+  while (workDay <= endDate) {
+    let workDays = countWorkDays;
+    while (workDays && workDay <= endDate) {
+      shedule.push(dateToString(workDay));
+      workDay.setDate(workDay.getDate() + 1);
+      workDays -= 1;
+    }
+    workDay.setDate(workDay.getDate() + countOffDays);
+  }
+
+  return shedule;
 }
 
 /**
@@ -286,8 +313,11 @@ function getWorkSchedule(/* period, countWorkDays, countOffDays */) {
  * Date(2022, 2, 1) => false
  * Date(2020, 2, 1) => true
  */
-function isLeapYear(/* date */) {
-  throw new Error('Not implemented');
+function isLeapYear(date) {
+  const dateObj = new Date(date);
+  dateObj.setDate(0);
+  dateObj.setMonth(2);
+  return dateObj.getDate() === 29;
 }
 
 module.exports = {
